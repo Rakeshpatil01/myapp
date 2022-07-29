@@ -18,3 +18,11 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+class UserUpdate(UserBase):
+    email: str
+    password: str
+    username: str
+
+    class Config:
+        orm_mode = True

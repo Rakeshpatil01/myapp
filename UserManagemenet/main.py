@@ -40,3 +40,12 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+
+@app.patch("/Users/{user_id}", response_model=schemas.UserUpdate)
+def update_user(user_id: int,user: schemas.UserCreate, db: Session = Depends(get_db)):
+    user_data = user.dict(exclude_unset=True)
+    db_user = crud.update_user(db,user_data, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
