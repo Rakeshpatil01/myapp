@@ -56,3 +56,12 @@ def delete_user(user_id: int,db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+@app.post("/token")
+async def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.username ==user.username).first()
+    if not db_user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not db_user.password == user.password:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    return {"access_token": user.username, "token_type": "bearer"}
