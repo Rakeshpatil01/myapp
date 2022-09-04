@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.io as pio
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from .plot_trend_line import find_grad_intercept
 
 
 def get_candlestick_plot(
@@ -57,6 +58,34 @@ def get_candlestick_plot(
         go.Line(x=df['Date'], y=df[f'{ma2}_ma'], name=f'{ma2} SMA'),
         row=1,
         col=1,
+    )
+    # Using the trend-line algorithm, deduce the gradient and intercept terms of
+    # the straight lines
+    m_res, c_res = find_grad_intercept(
+        'resistance',
+        df.index.values,
+        df.High.values,
+    )
+    m_supp, c_supp = find_grad_intercept(
+        'support',
+        df.index.values,
+        df.Low.values,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df['Date'],
+            y=m_res*df.index + c_res,
+            name='Resistance line'
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df['Date'],
+            y=m_supp*df.index + c_supp,
+            name='Support line'
+        )
     )
 
     # fig.add_trace(
