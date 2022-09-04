@@ -4,6 +4,9 @@ import plotly.io as pio
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from .plot_trend_line import find_grad_intercept
+from calc.py_bollingerbands import BollingerBands
+from calc.py_rsi import RSIIndicator
+import plotly.express as px
 
 
 def get_candlestick_plot(
@@ -88,6 +91,30 @@ def get_candlestick_plot(
         )
     )
 
+    indicator_bb = BollingerBands(df['Close'])
+
+    bb = df
+    bb['bb_h'] = indicator_bb.bollinger_hband()
+    bb['bb_l'] = indicator_bb.bollinger_lband()
+    bb = bb[['Close', 'bb_h', 'bb_l']]
+
+    fig.add_trace(
+        go.Line(x=df['Date'], y=df[f'bb_h'], name=f'upperBBand'),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Line(x=df['Date'], y=df[f'bb_l'], name=f'lowerBBand'),
+        row=1,
+        col=1,
+    )
+
+    df["rsi"] = RSIIndicator(df['Close']).rsi()
+    fig.add_trace(
+        go.Line(x=df['Date'], y=df['rsi'], name=f'RSI'),
+        row=2,
+        col=1,
+    )
     # fig.add_trace(
     #     go.Bar(x = df['Date'], y = df['Volume'], name = 'Volume'),
     #     row = 2,
