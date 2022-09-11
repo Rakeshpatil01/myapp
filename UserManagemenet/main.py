@@ -72,34 +72,3 @@ async def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
-
-manager = ConnectionManager()
-MESSAGE_STREAM_DELAY = 2  # seconds
-
-
-def new_messages():
-    results = engine.execute("SELECT count(*) FROM sensors_view_1s")
-    return None if results.fetchone()[0] == 0 else True
-
-
-async def event_generator():
-    if new_messages():
-        connection = engine.raw_connection()
-        with connection.cursor() as cur:
-            cur.execute("DECLARE c CURSOR FOR TAIL sensors_view_1s")
-            cur.execute("FETCH ALL c")
-            for row in cur:
-                yield row
-
-    await asyncio.sleep(MESSAGE_STREAM_DELAY)
-
-
-@app.websocket("/airquality")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            async for data in event_generator():
-                await websocket.send_json(data)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
