@@ -6,14 +6,16 @@ from calc.py_macd import MACD
 from calc.py_rsi import RSIIndicator
 from diagram.plot_candlestick import get_candlestick_plot
 import plotly.graph_objects as go
+import requests
 
 def app():
 
-    option = st.sidebar.selectbox('Select one symbol', ( 'AAPL', 'MSFT',"SPY",'WMT'))
+    option = st.sidebar.selectbox('Select one symbol', ( 'ADANIPORTS', 'ASIANPAINT',"AXISBANK",'BAJFINANCE','TATASTEEL','WIPRO','YESBANK'))
     # need to add list of stock names
 
     today = datetime.date.today()
     before = today - datetime.timedelta(days=700)
+    interval = st.sidebar.selectbox('Select interval', (1,3, 5,30,60,"1W",'1D','1M'))
     start_date = st.sidebar.date_input('Start date', before)
     end_date = st.sidebar.date_input('End date', today)
     if start_date < end_date:
@@ -43,9 +45,19 @@ def app():
     )
     # https://technical-analysis-library-in-python.readthedocs.io/en/latest/ta.html#momentum-indicators
 
-    df = pd.read_csv("F:/myapp/data/ADANIPOWER.csv")
-    df.rename(columns={"date":"Date","open":"Open","close":"Close","low":"Low","high":"High"},inplace=True)
-
+    data = {
+        "symbol": option,
+        "interval": interval,
+        "start_date": str(start_date),
+        "end_date": str(end_date)
+        }
+    print(data)
+    res = requests.post(f"http://localhost:8080/historic_data", json=data)
+    
+    if res.status_code == 200:
+        df = pd.DataFrame(res.json())
+    else:
+        raise ValueError
     # indicator_bb = BollingerBands(df['Close'])
 
     # bb = df

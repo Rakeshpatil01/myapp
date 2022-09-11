@@ -115,11 +115,11 @@ def get_candlestick_plot(
         row=2,
         col=1,
     )
-    # fig.add_trace(
-    #     go.Bar(x = df['Date'], y = df['Volume'], name = 'Volume'),
-    #     row = 2,
-    #     col = 1,
-    # )
+    fig.add_trace(
+        go.Bar(x = df['Date'], y = df['Volume'], name = 'Volume'),
+        row = 2,
+        col = 1,
+    )
 
     fig['layout']['xaxis2']['title'] = 'Date'
     fig['layout']['yaxis']['title'] = 'Price'

@@ -1,12 +1,10 @@
-import asyncio
-from fastapi import WebSocket, WebSocketDisconnect
-from .crud import ConnectionManager
+
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
+from . import crud, models, schemas, logic
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -72,3 +70,8 @@ async def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
+
+
+@app.post("/historic_data")
+async def historic_data(userinput: schemas.history_Data):
+    return logic.history_data(userinput.symbol, userinput.interval, userinput.start_date, userinput.end_date)
