@@ -1,13 +1,13 @@
+
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
+from . import crud, models, schemas, logic
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 
@@ -43,25 +43,35 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.patch("/users/{user_id}", response_model=schemas.UserUpdate)
-def update_user(user_id: int,user: schemas.UserCreate, db: Session = Depends(get_db)):
+def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
     user_data = user.dict(exclude_unset=True)
-    db_user = crud.update_user(db,user_data, user_id=user_id)
+    db_user = crud.update_user(db, user_data, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+
 @app.delete("/users/{user_id}")
-def delete_user(user_id: int,db: Session = Depends(get_db)):
-    db_user = crud.delete_user(db,user_id)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.delete_user(db, user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
 
 @app.post("/token")
 async def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.username ==user.username).first()
+    db_user = db.query(models.User).filter(
+        models.User.username == user.username).first()
     if not db_user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=400, detail="Incorrect username or password")
     if not db_user.password == user.password:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
+
+
+@app.post("/historic_data")
+async def historic_data(userinput: schemas.history_Data):
+    return logic.history_data(userinput.symbol, userinput.interval, userinput.start_date, userinput.end_date)

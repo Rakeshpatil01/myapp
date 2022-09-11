@@ -1,5 +1,5 @@
 from typing import List, Union
-
+from datetime import date
 from pydantic import BaseModel
 
 
@@ -11,9 +11,11 @@ class UserCreate(UserBase):
     password: str
     username: str
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 class User(UserBase):
     id: int
@@ -22,6 +24,7 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
+
 class UserUpdate(UserBase):
     email: str
     password: str
@@ -29,3 +32,10 @@ class UserUpdate(UserBase):
 
     class Config:
         orm_mode = True
+
+
+class history_Data(BaseModel):
+    symbol: str
+    interval: str
+    start_date: date
+    end_date: date
